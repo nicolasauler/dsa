@@ -81,33 +81,29 @@ fn counting_sort_hash<T: Clone + Debug + Ord>(vec: &mut [T]) {
     println!("counter: {:?}", counter);
 }
 
-// vec has numbers like 01, 09, 18, 49, that is, 2 digits
-fn bucket_sort<T: Clone + Debug + ToString>(vec: &mut [T]) {
+fn bucket_sort(vec: &mut [u32]) {
     let len = vec.len();
-    let mut counter: Vec<Vec<T>> = Vec::with_capacity(10);
+    let mut counter: Vec<Vec<u32>> = Vec::with_capacity(10);
     for _ in 0..10 {
         counter.push(Vec::new());
     }
 
     let mut max_magnitude = 0;
     for elem in vec.iter() {
-        let magnitude = elem.clone().to_string().len();
+        let mut magnitude = 1;
+        while *elem >= 10_u32.pow(magnitude) {
+            magnitude += 1;
+        }
         if magnitude > max_magnitude {
             max_magnitude = magnitude;
         }
     }
 
-    for k in (0..max_magnitude).rev() {
-        for j in 0..len {
-            let counter_ix = vec[j]
-                .clone()
-                .to_string()
-                .chars()
-                .nth(k)
-                .unwrap()
-                .to_digit(10)
-                .unwrap() as usize;
-            counter[counter_ix].push(vec[j].clone());
+    for k in 0..max_magnitude {
+        for elem in vec.iter() {
+            //let counter_ix = (elem % 10_u32.pow(k + 1)) / 10_u32.pow(k);
+            let counter_ix = (elem / 10_u32.pow(k)) % 10;
+            counter[counter_ix as usize].push(*elem);
         }
 
         let mut vec_ix = 0;
@@ -127,7 +123,59 @@ fn bucket_sort<T: Clone + Debug + ToString>(vec: &mut [T]) {
     }
 }
 
-fn radix_sort() {}
+fn get_max_mag(vec: &mut [u32]) -> u32 {
+    let mut max_mag: u32 = 0;
+
+    for &elem in vec.iter() {
+        let mut mag: u32 = 0;
+        while elem >= 10_u32.pow(mag) {
+            mag += 1;
+        }
+
+        if mag > max_mag {
+            max_mag = mag;
+        }
+    }
+
+    return max_mag;
+}
+
+fn get_prefix_sum(vec: &mut [u32], alg: u32) -> [usize; 10] {
+    let mut count: [usize; 10] = [0; 10];
+
+    // compute algarism counts
+    for elem in vec.iter() {
+        let mag_al = (*elem / 10_u32.pow(alg)) % 10;
+        count[mag_al as usize] += 1;
+    }
+
+    // compute prefix_sum
+    for i in 1..count.len() {
+        count[i] += count[i - 1];
+    }
+
+    return count;
+}
+
+fn radix_sort(vec: &mut [u32]) {
+    let mut output: Vec<u32> = vec![0; vec.len()];
+    let num_algs = get_max_mag(vec) + 1;
+
+    for alg in 0..num_algs {
+        let mut prefix_sum = get_prefix_sum(vec, alg);
+
+        for &elem in vec.iter().rev() {
+            let mag_alg = (elem / 10_u32.pow(alg)) % 10;
+
+            let position = &mut prefix_sum[mag_alg as usize];
+            *position -= 1;
+
+            output[*position] = elem;
+        }
+
+        vec.copy_from_slice(&output);
+    }
+}
 
 pub fn test_count_sorts() {
     let mut vec = vec![1, 3, 2, 5, 4, 7];
@@ -142,8 +190,12 @@ pub fn test_count_sorts() {
     counting_sort_with_max(&mut vec);
     println!("new_vec: {vec:?}");
 
-    let mut vec = vec![1, 3, 2, 5, 4, 7];
+    let mut vec: Vec<u32> = vec![10, 30, 20, 50, 40, 60, 13, 15, 49, 17, 70, 48, 80];
     bucket_sort(&mut vec);
+    println!("new_vec: {vec:?}");
+
+    let mut vec = vec![1, 3, 2, 5, 4, 6, 7, 8];
+    radix_sort(&mut vec);
     println!("new_vec: {vec:?}");
 }
 
@@ -185,6 +237,39 @@ mod tests {
         assert_eq!(
             vec,
             vec![10, 13, 15, 17, 20, 30, 40, 48, 49, 50, 60, 70, 80]
+        );
+    }
+
+    #[test]
+    fn test_radix_sort_1_mag() {
+        let mut vec = vec![1, 3, 2, 5, 4, 6, 7, 8];
+        radix_sort(&mut vec);
+        assert_eq!(vec, vec![1, 2, 3, 4, 5, 6, 7, 8]);
+    }
+
+    #[test]
+    fn test_radix_sort_2_mag() {
+        let mut vec = vec![10, 30, 20, 50, 40, 60, 13, 15, 49, 17, 70, 48, 80];
+        radix_sort(&mut vec);
+        assert_eq!(
+            vec,
+            vec![10, 13, 15, 17, 20, 30, 40, 48, 49, 50, 60, 70, 80]
+        );
+    }
+
+    #[test]
+    fn test_radix_sort_mixed_mag() {
+        let mut vec = vec![
+            10, 30, 20, 50, 40, 60, 13, 15, 49, 17, 70, 48, 80, 100, 200, 500, 400, 600, 130, 150,
+            490, 170, 700, 480, 800,
+        ];
+        radix_sort(&mut vec);
+        assert_eq!(
+            vec,
+            vec![
+                10, 13, 15, 17, 20, 30, 40, 48, 49, 50, 60, 70, 80, 100, 130, 150, 170, 200, 400,
+                480, 490, 500, 600, 700, 800
+            ]
         );
     }
 }
