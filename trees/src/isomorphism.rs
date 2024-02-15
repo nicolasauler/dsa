@@ -1,10 +1,10 @@
 #[derive(Debug, PartialEq)]
-struct Tree {
-    value: usize,
-    children: Vec<Tree>,
+pub struct Tree {
+    pub value: usize,
+    pub children: Vec<Tree>,
 }
 
-fn root_tree(adjacency_list: &[Vec<usize>], root: usize, visited: &mut [bool]) -> Option<Tree> {
+pub fn root_tree(adjacency_list: &[Vec<usize>], root: usize, visited: &mut [bool]) -> Option<Tree> {
     if visited[root] {
         return None;
     }
@@ -24,7 +24,7 @@ fn root_tree(adjacency_list: &[Vec<usize>], root: usize, visited: &mut [bool]) -
     return Some(tree);
 }
 
-fn find_center_tree(adjacency_list: &[Vec<usize>]) -> Vec<usize> {
+pub fn find_center_tree(adjacency_list: &[Vec<usize>]) -> Vec<usize> {
     let mut leaves = Vec::<usize>::new();
     let mut degrees: Vec<usize> = vec![0; adjacency_list.len()];
     for (i, node) in adjacency_list.iter().enumerate() {
