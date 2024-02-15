@@ -29,6 +29,27 @@ fn tree_height(tree: &Tree) -> usize {
     return children_height.iter().max().unwrap() + 1;
 }
 
+#[derive(Debug, PartialEq)]
+struct BTree {
+    value: usize,
+    left: Option<Box<BTree>>,
+    right: Option<Box<BTree>>,
+}
+
+fn inverting_bin_tree(tree: &mut BTree) {
+    if let Some(left) = &mut tree.left {
+        inverting_bin_tree(left);
+    }
+    if let Some(right) = &mut tree.right {
+        inverting_bin_tree(right);
+    }
+
+    //std::mem::swap(&mut tree.left, &mut tree.right);
+    let left = tree.left.take();
+    tree.left = tree.right.take();
+    tree.right = left;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -139,5 +160,66 @@ mod tests {
 
         let height = tree_height(&tree);
         assert_eq!(height, 3);
+    }
+
+    #[test]
+    fn test_invert_bin_tree() {
+        use super::inverting_bin_tree;
+        use super::BTree;
+
+        let mut b_tree = BTree {
+            value: 1,
+            left: Some(Box::new(BTree {
+                value: 2,
+                left: Some(Box::new(BTree {
+                    value: 4,
+                    left: None,
+                    right: None,
+                })),
+                right: Some(Box::new(BTree {
+                    value: 5,
+                    left: None,
+                    right: None,
+                })),
+            })),
+            right: Some(Box::new(BTree {
+                value: 3,
+                left: Some(Box::new(BTree {
+                    value: 6,
+                    left: None,
+                    right: None,
+                })),
+                right: None,
+            })),
+        };
+        inverting_bin_tree(&mut b_tree);
+        assert_eq!(
+            b_tree,
+            BTree {
+                value: 1,
+                left: Some(Box::new(BTree {
+                    value: 3,
+                    left: None,
+                    right: Some(Box::new(BTree {
+                        value: 6,
+                        left: None,
+                        right: None,
+                    })),
+                })),
+                right: Some(Box::new(BTree {
+                    value: 2,
+                    left: Some(Box::new(BTree {
+                        value: 5,
+                        left: None,
+                        right: None,
+                    })),
+                    right: Some(Box::new(BTree {
+                        value: 4,
+                        left: None,
+                        right: None,
+                    })),
+                })),
+            }
+        );
     }
 }
