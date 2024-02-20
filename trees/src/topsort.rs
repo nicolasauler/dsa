@@ -57,7 +57,7 @@ fn calculate_in_degree(adjacency_list: &[Vec<usize>]) -> Vec<usize> {
     return degree;
 }
 
-fn topsort_kahn(adjacency_list: &[Vec<usize>]) -> Vec<usize> {
+pub fn topsort_kahn(adjacency_list: &[Vec<usize>]) -> Vec<usize> {
     let mut in_degrees = calculate_in_degree(adjacency_list);
     let mut top_queue: VecDeque<usize> = VecDeque::new();
     for i in 0..in_degrees.len() {
@@ -73,6 +73,42 @@ fn topsort_kahn(adjacency_list: &[Vec<usize>]) -> Vec<usize> {
             in_degrees[*to_node] -= 1;
             if in_degrees[*to_node] == 0 {
                 top_queue.push_back(*to_node);
+            }
+        }
+    }
+
+    return ordering;
+}
+
+fn calculate_in_degree_weighted(adjacency_list: &[Vec<(usize, i32)>]) -> Vec<usize> {
+    let len = adjacency_list.len();
+    let mut degree: Vec<usize> = vec![0; len];
+
+    for i in 0..len {
+        for to_node in &adjacency_list[i] {
+            degree[to_node.0] += 1;
+        }
+    }
+
+    return degree;
+}
+
+pub fn topsort_kahn_weighted(adjacency_list: &[Vec<(usize, i32)>]) -> Vec<usize> {
+    let mut in_degrees = calculate_in_degree_weighted(adjacency_list);
+    let mut top_queue: VecDeque<usize> = VecDeque::new();
+    for i in 0..in_degrees.len() {
+        if in_degrees[i] == 0 {
+            top_queue.push_back(i);
+        }
+    }
+
+    let mut ordering: Vec<usize> = Vec::new();
+    while let Some(node) = top_queue.pop_front() {
+        ordering.push(node);
+        for to_node in &adjacency_list[node] {
+            in_degrees[to_node.0] -= 1;
+            if in_degrees[to_node.0] == 0 {
+                top_queue.push_back(to_node.0);
             }
         }
     }
