@@ -20,9 +20,9 @@ fn bellman_ford(edge_list: &[Edge], start: usize, n_nodes: usize) -> Vec<i32> {
 
     for _ in 0..(n_nodes - 1) {
         for edge in edge_list {
-            let potential_cost = distances[edge.from_node].saturating_add(edge.edge_weight);
-            if potential_cost < distances[edge.to_node] {
-                distances[edge.to_node] = potential_cost;
+            let probing_cost = distances[edge.from_node].saturating_add(edge.edge_weight);
+            if probing_cost < distances[edge.to_node] {
+                distances[edge.to_node] = probing_cost;
             }
         }
     }

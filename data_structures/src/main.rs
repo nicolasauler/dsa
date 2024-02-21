@@ -1,65 +1,17 @@
 #![allow(dead_code)]
-#![allow(unused_variables)]
+mod avl_tree;
+mod btree;
+mod linked_list;
 
-struct LinkedList {
-    head: Option<Box<Node>>,
+/// Also called prefix tree
+/// Trie comes from reTRIEval maybe?
+struct Trie {
+    root: Option<Box<TrieNode>>,
 }
 
-#[derive(Clone)]
-struct Node {
-    value: i32,
-    next: Option<Box<Node>>,
+struct TrieNode {
+    children: Option<Vec<Box<TrieNode>>>,
+    terminal: bool,
 }
 
-// a -> b -> c -> d -> None
-// prev = None
-// current = a
-// next = b
-// a.next = None
-// prev = a
-// current = b
-// a -> None
-// next = c
-// b.next = a
-// prev = b
-// current = c
-// b -> a -> None
-// next = d
-// c.next = b
-// prev = c
-// current = d
-// c -> b -> a -> None
-// next = None
-// d.next = c
-// prev = d
-// current = None
-// d -> c -> b -> a -> None
-//
-// linked_list.head = d
-fn reverse_linked_list(linked_list: &mut LinkedList) {
-    let mut prev = None;
-    let mut current = linked_list.head.take();
-    while let Some(mut current_node) = current {
-        let next = current_node.next.take();
-        current_node.next = prev.take();
-        prev = Some(current_node);
-        current = next;
-    }
-    linked_list.head = prev;
-}
-
-fn main() {
-    let mut linked_list = LinkedList {
-        head: Some(Box::new(Node {
-            value: 1,
-            next: Some(Box::new(Node {
-                value: 2,
-                next: Some(Box::new(Node {
-                    value: 3,
-                    next: None,
-                })),
-            })),
-        })),
-    };
-    reverse_linked_list(&mut linked_list);
-}
+fn main() {}
